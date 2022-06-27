@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Tests
+coverage/
+
+# Production
+dist/
+index.gs
+
+# Misc
+.DS_Store
+.vscode/
+.idea/
+
+# Cache
+.pnp/
+.swc/
+.eslintcache
+
+# Logs
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.tsbuildinfo
+
+# Env
+.env
+.clasp.json

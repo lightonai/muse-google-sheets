@@ -1,0 +1,42 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"exclude": ["node_modules", "dist"],
+	"include": ["src/**/*.ts"],
+	"compilerOptions": {
+		// Output
+		"sourceMap": false,
+
+		// Compiling
+		"allowSyntheticDefaultImports": true,
+		"esModuleInterop": true,
+		"inlineSources": false,
+		"removeComments": true,
+
+		// Additional configuration
+		"module": "esnext",
+		"moduleResolution": "Node",
+		"target": "es2019",
+
+		// Rules
+		"allowJs": false,
+		"experimentalDecorators": true,
+		"forceConsistentCasingInFileNames": true,
+		"isolatedModules": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitAny": true,
+		"strict": true,
+		"strictBindCallApply": true,
+		"strictNullChecks": true,
+		// The next two are handled by linters
+		"noUnusedLocals": false,
+		"noUnusedParameters": false,
+
+		// Output
+		"incremental": false,
+		"lib": ["ES2019"],
+		"noEmit": true,
+		"declaration": true,
+		"declarationMap": true,
+		"emitDecoratorMetadata": true
+	}
+}

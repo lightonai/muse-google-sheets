@@ -1,0 +1,5 @@
+**/node_modules/**
+**/dist/**
+**/src/**
+tsup.config.ts
+build.ts

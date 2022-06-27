@@ -1,0 +1,27 @@
+{
+	"name": "lighton-muse-google-sheet",
+	"version": "0.0.1",
+	"private": true,
+	"license": "MIT",
+	"type": "module",
+	"scripts": {
+		"build": "node --loader ts-node/esm ./build.ts",
+		"push": "yarn build && clasp push",
+		"lint": "prettier . --write",
+		"tsc": "tsc"
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"@google/clasp": "^2.4.1",
+		"@swc/core": "^1.2.205",
+		"@types/google-apps-script": "^1.0.49",
+		"@types/prettier": "^2.6.3",
+		"prettier": "^2.7.1",
+		"ts-node": "^10.8.1",
+		"tsup": "^6.1.2",
+		"typescript": "^4.7.4"
+	},
+	"engines": {
+		"node": ">=14.13.0"
+	}
+}
