@@ -2,6 +2,26 @@ import { build } from 'tsup';
 import { readFile, writeFile } from 'fs/promises';
 import prettier from 'prettier';
 
+const warnings = ['\nWarnings:'];
+
+// Patch `lighton-muse` dependency to avoid bundling `node-fetch`.
+let lightonMuseContent = await readFile(
+	'./node_modules/lighton-muse/dist/index.js',
+	'utf-8'
+);
+
+try {
+	await writeFile(
+		'./node_modules/lighton-muse/dist/index.js',
+		lightonMuseContent.replace('import fetch from "node-fetch";', '')
+	);
+
+	warnings.push('⚠️ Patched lighton-muse to avoid bundling node-fetch.');
+	warnings.push('⚠️ You cannot use the exported `MuseRequest` class.');
+} catch (err) {
+	console.error(err);
+}
+
 // First build the files
 await build({
 	entry: ['src/index.ts'],
@@ -23,10 +43,10 @@ if (!prettierConfig) {
 }
 
 // Get the generated JS bundle
-let content = await readFile('./dist/index.js', 'utf8');
+let bundleContent = await readFile('./dist/index.js', 'utf8');
 
 // Extract the banner ('use strict';) and the IIFE (Immediately Invoked Function Expression) body
-let result = content.match(
+let result = bundleContent.match(
 	/(?<banner>.*)\n\(\(\) => \{\n(?<body>(.*?\n)*)\}\)\(\);/muy
 );
 if (!result) {
@@ -53,3 +73,5 @@ try {
 } catch (err) {
 	console.error(err);
 }
+
+warnings.forEach((warn) => console.log(warn));
