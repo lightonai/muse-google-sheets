@@ -6,7 +6,7 @@ import {
 	ApiRequestOptions,
 	ApiCreateParams,
 } from 'lighton-muse';
-import { API_KEY_PROP } from './index.js';
+import { API_KEY_PROP, API_MODEL_PROP } from './index.js';
 import { MuseRequest } from './client.js';
 
 type RecordTypes<K> = {
@@ -50,7 +50,7 @@ const USER_ALLOWED_REQUEST_PARAMS: RecordTypes<UserAllowedRequestParams> = {
 	k: 'number',
 	presence_penalty: 'number',
 	frequency_penalty: 'number',
-	// TODO: handle special case (string[])
+	// TODO: handle special case with `;` (string[])
 	stop_words: 'string',
 	concat_prompt: 'boolean',
 	seed: 'number',
@@ -102,7 +102,7 @@ export function completeCells() {
 	}
 
 	let { error, response } = new MuseRequest(apiKey).query(
-		ApiModels.OrionFr,
+		userProperties.getProperty(API_MODEL_PROP) as ApiModels,
 		Endpoints.Create,
 		batchRequest
 	);
