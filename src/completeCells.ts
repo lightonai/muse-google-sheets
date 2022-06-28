@@ -2,11 +2,60 @@ import {
 	ApiBatchRequestOptions,
 	ApiModels,
 	Endpoints,
+	ApiCreateOptions,
 	ApiRequestOptions,
 	ApiCreateParams,
 } from 'lighton-muse';
 import { API_KEY_PROP } from './index.js';
 import { MuseRequest } from './client.js';
+
+type RecordTypes<K> = {
+	[P in keyof K]: K[P] extends infer T | undefined
+		? T extends string
+			? 'string'
+			: T extends boolean
+			? 'boolean'
+			: T extends number
+			? 'number'
+			: T extends string[]
+			? 'string'
+			: never
+		: never;
+};
+
+type UserAllowedRequestOptions = Pick<ApiCreateOptions, 'n_tokens' | 'best_of'>;
+const USER_ALLOWED_REQUEST_OPTIONS: RecordTypes<UserAllowedRequestOptions> = {
+	n_tokens: 'number',
+	best_of: 'number',
+};
+
+type UserAllowedRequestParams = Pick<
+	ApiCreateParams,
+	| 'mode'
+	| 'temperature'
+	| 'p'
+	| 'k'
+	| 'biases'
+	| 'presence_penalty'
+	| 'frequency_penalty'
+	| 'stop_words'
+	| 'concat_prompt'
+	| 'seed'
+	| 'skill'
+>;
+const USER_ALLOWED_REQUEST_PARAMS: RecordTypes<UserAllowedRequestParams> = {
+	mode: 'string',
+	temperature: 'number',
+	p: 'number',
+	k: 'number',
+	presence_penalty: 'number',
+	frequency_penalty: 'number',
+	// TODO: handle special case (string[])
+	stop_words: 'string',
+	concat_prompt: 'boolean',
+	seed: 'number',
+	skill: 'string',
+};
 
 export function completeCells() {
 	let begin = new Date();
@@ -33,48 +82,40 @@ export function completeCells() {
 		);
 	}
 
-	let req: ApiBatchRequestOptions<Endpoints.Create> = [];
+	let batchRequest: ApiBatchRequestOptions<Endpoints.Create> = [];
 
 	let [firstRow, ...rows] = range.getValues();
 
-	let validation = _validateFirstRow(firstRow);
+	let { error: rowValidationError, params } = _validateFirstRow(firstRow);
 
-	if (validation.error) {
-		return spreadsheet.toast(validation.error, 'Error!');
-	}
+	if (rowValidationError)
+		return spreadsheet.toast(rowValidationError, 'Error!');
+	if (!params) throw new Error('Undefined behavior');
 
 	for (let row of rows) {
-		let _completion = row.pop();
-		let [prompt, ...values] = row;
+		let [prompt, ...values] = row.slice(0, -1);
 
-		let reqPart: ApiRequestOptions<Endpoints.Create> = {
-			text: prompt,
-		};
+		let request = _createRequestOptions(prompt, params, values);
 
-		reqPart = _addParameters(
-			reqPart,
-			validation.params as string[],
-			values
-		);
-
-		Logger.log(reqPart);
-
-		req.push(reqPart);
+		Logger.log(request);
+		batchRequest.push(request);
 	}
 
-	let response = new MuseRequest(apiKey).query(
+	let { error, response } = new MuseRequest(apiKey).query(
 		ApiModels.OrionFr,
 		Endpoints.Create,
-		req
+		batchRequest
 	);
 
-	if (response.error) {
-		return spreadsheet.toast(response.error.message, 'Error!');
-	}
+	if (error) {
+		Logger.log(error);
 
-	for (let index = 0; index < response.response.outputs.length; index++) {
-		const output =
-			response.response.outputs[index][0].completions[0].output_text;
+		return spreadsheet.toast(error.message, 'Error!');
+	}
+	if (!response) throw new Error('Undefined behavior');
+
+	for (let index = 0; index < response.outputs.length; index++) {
+		const output = response.outputs[index][0].completions[0].output_text;
 
 		range.getCell(index + 2, range.getNumColumns()).setValue(output);
 	}
@@ -85,58 +126,35 @@ export function completeCells() {
 	);
 }
 
-function _validateFirstRow(row: any[]):
-	| {
-			params: null;
-			error: string;
-	  }
-	| {
-			params: string[];
-			error: null;
-	  } {
-	let _completion = row.pop();
-	let [prompt, ...rest] = row;
+function _validateFirstRow(row: any[]): {
+	params?: string[];
+	error?: string;
+} {
+	// Omit the first and last columns (prompt and completion)
+	const parameters = row.slice(1, -1);
 
-	if (typeof prompt !== 'string') {
-		return { error: `Prompt is not a string: ${prompt}`, params: null };
-	}
-
-	for (let param of rest) {
+	for (let param of parameters) {
+		// Verify that the parameter is a valid string
 		if (typeof param !== 'string') {
-			return { error: `Invalid parameter type: ${param}`, params: null };
+			return { error: `Invalid parameter type: ${param}` };
 		}
 
+		// Validate the parameter name
 		if (
-			!USER_ALLOWED_REQUEST_OPTIONS.includes(param) &&
-			!USER_ALLOWED_REQUEST_PARAMS.includes(param)
+			!Object.keys(USER_ALLOWED_REQUEST_OPTIONS).includes(param) &&
+			!Object.keys(USER_ALLOWED_REQUEST_PARAMS).includes(param)
 		) {
 			return {
 				error: `Parameter does not exist: ${param || '<empty>'}`,
-				params: null,
 			};
 		}
 	}
 
-	return { params: rest, error: null };
+	return { params: parameters };
 }
 
-const USER_ALLOWED_REQUEST_OPTIONS = ['n_tokens', 'best_of'];
-const USER_ALLOWED_REQUEST_PARAMS = [
-	'mode',
-	'temperature',
-	'p',
-	'k',
-	'biases',
-	'presence_penalty',
-	'frequency_penalty',
-	'stop_words',
-	'concat_prompt',
-	'seed',
-	'skill',
-];
-
-function _addParameters(
-	requestOptions: ApiRequestOptions<Endpoints.Create>,
+function _createRequestOptions(
+	text: string,
 	params: string[],
 	values: any[]
 ): ApiRequestOptions<Endpoints.Create> {
@@ -144,24 +162,47 @@ function _addParameters(
 		throw new Error('Parameters and values do not match.');
 	}
 
-	let parameters: ApiCreateParams = {
-		concat_prompt: true,
+	const requestOptions: ApiCreateOptions = {
+		text,
+		params: {
+			concat_prompt: true,
+		},
 	};
+
 	for (let param of params) {
-		// Remove empty values ('' or 0)
-		let value = values.shift() || undefined;
+		const value = values.shift();
 
-		if (USER_ALLOWED_REQUEST_PARAMS.includes(param)) {
-			// TODO: check value type match with param type
+		// Skip empty parameters
+		if (value === '') continue;
 
-			Object.assign(parameters, { [param]: value });
-		} else if (!USER_ALLOWED_REQUEST_OPTIONS.includes(param)) {
-			// TODO: check value type match with param type
+		// Add the parameter to the request
+		if (Object.keys(USER_ALLOWED_REQUEST_PARAMS).includes(param)) {
+			if (
+				typeof param !==
+				USER_ALLOWED_REQUEST_PARAMS[
+					param as keyof UserAllowedRequestParams
+				]
+			) {
+				// TODO: handle error
+				continue;
+			}
+
+			Object.assign(requestOptions.params as ApiCreateParams, {
+				[param]: value,
+			});
+		} else if (Object.keys(USER_ALLOWED_REQUEST_OPTIONS).includes(param)) {
+			if (
+				typeof param !==
+				USER_ALLOWED_REQUEST_OPTIONS[
+					param as keyof UserAllowedRequestOptions
+				]
+			) {
+				// TODO: handle error
+				continue;
+			}
 
 			Object.assign(requestOptions, { [param]: value });
 		}
-
-		Object.assign(requestOptions, { params: parameters });
 	}
 
 	return requestOptions;

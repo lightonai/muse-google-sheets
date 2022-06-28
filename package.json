@@ -11,7 +11,7 @@
 		"tsc": "tsc"
 	},
 	"dependencies": {
-		"lighton-muse": "^0.0.1"
+		"lighton-muse": "^1.0.0"
 	},
 	"devDependencies": {
 		"@google/clasp": "^2.4.1",
