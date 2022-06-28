@@ -3,17 +3,15 @@ import { readFile, writeFile } from 'fs/promises';
 import prettier from 'prettier';
 
 const warnings = ['\nWarnings:'];
+const lightonMuseFile = './node_modules/lighton-muse/dist/index.js';
 
 // Patch `lighton-muse` dependency to avoid bundling `node-fetch`.
-let lightonMuseContent = await readFile(
-	'./node_modules/lighton-muse/dist/index.js',
-	'utf-8'
-);
+let lightonMuseContent = await readFile(lightonMuseFile, 'utf-8');
 
 try {
 	await writeFile(
-		'./node_modules/lighton-muse/dist/index.js',
-		lightonMuseContent.replace('import fetch from "node-fetch";', '')
+		lightonMuseFile,
+		lightonMuseContent.replace(/import .* from "node-fetch";\n/g, '')
 	);
 
 	warnings.push('⚠️ Patched lighton-muse to avoid bundling node-fetch.');

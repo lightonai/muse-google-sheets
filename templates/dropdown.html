@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<base target="_top" />
+
+		<!-- Include the Google Add-on stylesheet -->
+		<link
+			rel="stylesheet"
+			href="https://ssl.gstatic.com/docs/script/css/add-ons.css"
+		/>
+		<!-- Expand the select item to take as much place as possible -->
+		<style>
+			#choice {
+				width: 200px;
+				text-align: start;
+			}
+		</style>
+	</head>
+
+	<script>
+		function submit() {
+			const choice = document.getElementById('choice').value;
+			google.script.run.withSuccessHandler(onSuccess).selectModel(choice);
+		}
+		function onSuccess() {
+			google.script.host.close();
+		}
+	</script>
+
+	<body onload="setup()" onsubmit="submit()">
+		<form>
+			<select id="choice">
+				<option value="orion-fr">Orion Fr</option>
+				<option value="lyra-fr">Lyra Fr</option>
+				<option value="orion-en">Orion En</option>
+				<option value="lyra-en">Lyra En</option>
+				<option value="auriga-de">Auriga De</option>
+				<option value="auriga-es">Auriga Es</option>
+				<option value="auriga-it">Auriga It</option>
+			</select>
+			<input type="submit" value="Submit" />
+		</form>
+	</body>
+</html>

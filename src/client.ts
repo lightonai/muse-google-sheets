@@ -2,7 +2,6 @@ import type {
 	ApiRequestOptions,
 	ApiModels,
 	ApiBatchRequestOptions,
-	ApiBatchResponse,
 	ApiResponse,
 } from 'lighton-muse';
 import {
@@ -16,17 +15,15 @@ import {
 export class MuseRequest {
 	constructor(private apiKey: string) {}
 
-	public async query<
+	public query<
 		E extends Endpoints,
 		O extends ApiRequestOptions<E> | ApiBatchRequestOptions<E>
-	>(model: ApiModels, endpoint: E, options: O): Promise<MuseResponse<E, O>> {
-		const response = await this.raw(model, endpoint, options);
+	>(model: ApiModels, endpoint: E, options: O): MuseResponse<E> {
+		const response = this.raw(model, endpoint, options);
 		const body = jsonParseOrNull(response.getContentText('utf-8'));
 
-		Logger.log(body);
-
 		if (response.getResponseCode() !== 200 && isApiResponseBadRequest(body))
-			return { error: new Error(body.details), response: null };
+			return { error: new Error(body.detail), response: null };
 
 		if (isApiResponseError(body)) {
 			return {
@@ -36,19 +33,20 @@ export class MuseRequest {
 		}
 
 		return {
-			response: body as O extends ApiBatchRequestOptions<E>
-				? ApiBatchResponse<E>
-				: ApiResponse<E>,
+			response: body as ApiResponse<E>,
 			error: null,
 		};
 	}
 
-	public async raw<E extends Endpoints>(
+	public raw<E extends Endpoints>(
 		model: ApiModels,
 		endpoint: E,
 		options: ApiRequestOptions<E> | ApiBatchRequestOptions<E>
-	): Promise<GoogleAppsScript.URL_Fetch.HTTPResponse> {
-		const url = `${MUSE_API_BASE_URL}${endpoint}`;
+	): GoogleAppsScript.URL_Fetch.HTTPResponse {
+		// TODO: use prod api endpoint
+		// const url = `${MUSE_API_BASE_URL}${endpoint}`;
+
+		const url = `https://muse-staging-api.lighton.ai/muse/v1/${endpoint}`;
 
 		const response = UrlFetchApp.fetch(url, {
 			method: 'post',
