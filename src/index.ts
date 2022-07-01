@@ -5,7 +5,7 @@ export function onInstall(event: GoogleAppsScript.Events.SheetsOnOpen) {
 	onOpen(event);
 }
 
-export function onOpen(event: GoogleAppsScript.Events.SheetsOnOpen) {
+export function onOpen(_event: GoogleAppsScript.Events.SheetsOnOpen) {
 	const ui = SpreadsheetApp.getUi();
 
 	ui.createMenu('Muse')
