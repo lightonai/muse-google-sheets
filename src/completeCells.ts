@@ -5,7 +5,7 @@ import {
 	ApiCreateOptions,
 	ApiRequestOptions,
 	ApiCreateParams,
-	ApiMode,
+	ApiModes,
 } from 'lighton-muse';
 import { API_KEY_PROP, API_MODEL_PROP } from './index.js';
 import { MuseRequest } from './client.js';
@@ -61,11 +61,11 @@ const isUserAllowedRequestParam = (
 		// If the mode param is not a valid model, return false
 		if (
 			key === 'mode' &&
-			!Object.values(ApiMode).includes(value as ApiMode)
+			!Object.values(ApiModes).includes(value as ApiModes)
 		) {
 			spreadsheet.toast(
 				`Invalid parameter type: ${key} must be one of ${Object.values(
-					ApiMode
+					ApiModes
 				).join(' / ')}`
 			);
 
