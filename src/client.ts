@@ -1,15 +1,12 @@
-import type {
-	ApiRequestOptions,
-	ApiModels,
-	ApiBatchRequestOptions,
-	ApiResponse,
-} from 'lighton-muse';
 import {
-	MUSE_API_BASE_URL,
-	isApiResponseError,
+	type ApiBatchRequestOptions,
+	type ApiModels,
+	type ApiRequestOptions,
+	type ApiResponse,
+	Endpoints,
 	MuseResponse,
 	isApiResponseBadRequest,
-	Endpoints,
+	isApiResponseError,
 } from 'lighton-muse';
 
 export class MuseRequest {
@@ -22,8 +19,12 @@ export class MuseRequest {
 		const response = this.raw(model, endpoint, options);
 		const body = jsonParseOrNull(response.getContentText('utf-8'));
 
-		if (response.getResponseCode() !== 200 && isApiResponseBadRequest(body))
+		if (
+			response.getResponseCode() !== 200 &&
+			isApiResponseBadRequest(body)
+		) {
 			return { error: new Error(body.detail), response: null };
+		}
 
 		if (isApiResponseError(body)) {
 			return {
@@ -43,8 +44,10 @@ export class MuseRequest {
 		endpoint: E,
 		options: ApiRequestOptions<E> | ApiBatchRequestOptions<E>
 	): GoogleAppsScript.URL_Fetch.HTTPResponse {
-		// TODO: use prod api endpoint
-		// const url = `${MUSE_API_BASE_URL}${endpoint}`;
+		/*
+		 * TODO: use prod api endpoint
+		 * const url = `${MUSE_API_BASE_URL}${endpoint}`;
+		 */
 
 		const url = `https://muse-staging-api.lighton.ai/muse/v1/${endpoint}`;
 

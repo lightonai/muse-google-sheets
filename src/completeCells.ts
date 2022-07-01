@@ -1,13 +1,12 @@
+import { API_KEY_PROP, API_MODEL_PROP } from './index.js';
 import {
 	ApiBatchRequestOptions,
-	ApiModels,
-	Endpoints,
-	ApiRequestOptions,
-	ApiCreateParams,
-	ApiModes,
 	ApiCreateOptions,
+	ApiCreateParams,
+	ApiModels,
+	ApiModes,
+	Endpoints,
 } from 'lighton-muse';
-import { API_KEY_PROP, API_MODEL_PROP } from './index.js';
 import { MuseRequest } from './client.js';
 
 type RecordTypes<K> = {
@@ -30,14 +29,13 @@ type UserAllowedParameters = Omit<
 const USER_ALLOWED_PARAMETERS: RecordTypes<UserAllowedParameters> = {
 	n_tokens: 'number',
 	best_of: 'number',
-	// TODO: Handle special case
 	mode: 'string',
 	temperature: 'number',
 	p: 'number',
 	k: 'number',
 	presence_penalty: 'number',
 	frequency_penalty: 'number',
-	// Special case handled lower (split string on `;`)
+	// Special case handled (split string on `;`)
 	stop_words: 'string',
 	concat_prompt: 'boolean',
 	seed: 'number',
@@ -54,10 +52,11 @@ function checkUserAllowedParameters(
 	key: keyof UserAllowedParameters,
 	value: unknown
 ): string | null {
-	if (!(typeof value === USER_ALLOWED_PARAMETERS[key]))
+	if (!(typeof value === USER_ALLOWED_PARAMETERS[key])) {
 		return `Invalid parameter type: ${key} must be of type "${
 			USER_ALLOWED_PARAMETERS[key]
 		}" and is type "${typeof value}"`;
+	}
 
 	// If the mode parameter is not a valid model, return false
 	if (
@@ -73,7 +72,7 @@ function checkUserAllowedParameters(
 }
 
 export function completeCells() {
-	let begin = new Date();
+	const begin = new Date();
 
 	const userProperties = PropertiesService.getUserProperties();
 	const apiKey = userProperties.getProperty(API_KEY_PROP);
@@ -88,8 +87,9 @@ export function completeCells() {
 		);
 	}
 
-	if (!range)
+	if (!range) {
 		return spreadsheet.toast('You did not select a range.', 'Error!');
+	}
 
 	if (!(range.getNumColumns() >= 2 && range.getNumRows() >= 2)) {
 		return spreadsheet.toast(
@@ -98,20 +98,25 @@ export function completeCells() {
 		);
 	}
 
-	let batchRequest: ApiBatchRequestOptions<Endpoints.Create> = [];
+	const batchRequest: ApiBatchRequestOptions<Endpoints.Create> = [];
 
-	let [firstRow, ...rows] = range.getValues();
+	const [firstRow, ...rows] = range.getValues();
 
-	let { error: rowValidationError, params } = _validateFirstRow(firstRow);
+	const { error: rowValidationError, params } = _validateFirstRow(firstRow);
 
-	if (rowValidationError)
+	if (rowValidationError) {
 		return spreadsheet.toast(rowValidationError, 'Error!');
+	}
 	if (!params) throw new Error('Unreachable');
 
-	for (let row of rows) {
-		let [prompt, ...values] = row.slice(0, -1);
+	for (const row of rows) {
+		const [prompt, ...values] = row.slice(0, -1);
 
-		let { error, options } = _createRequestOptions(prompt, params, values);
+		const { error, options } = _createRequestOptions(
+			prompt,
+			params,
+			values
+		);
 
 		if (error) return spreadsheet.toast(error, 'Error!');
 		if (!options) throw new Error('Unreachable');
@@ -119,7 +124,7 @@ export function completeCells() {
 		batchRequest.push(options);
 	}
 
-	let { error, response } = new MuseRequest(apiKey).query(
+	const { error, response } = new MuseRequest(apiKey).query(
 		userProperties.getProperty(API_MODEL_PROP) as ApiModels,
 		Endpoints.Create,
 		batchRequest
@@ -148,7 +153,7 @@ function _validateFirstRow(row: any[]): {
 	// Omit the first and last columns (prompt and completion)
 	const parameters = row.slice(1, -1);
 
-	for (let param of parameters) {
+	for (const param of parameters) {
 		// Verify that the parameter is a valid string
 		if (typeof param !== 'string') {
 			return { error: `Invalid parameter type: ${param}` };
@@ -179,15 +184,16 @@ function _createRequestOptions(
 
 	const params: ApiCreateParams = {};
 
-	for (let param of parameters) {
+	for (const param of parameters) {
 		let value = values.shift();
 
 		// Skip empty parameters
 		if (value === '') continue;
 
 		// Check for invalid parameter types
-		let error = checkUserAllowedParameters(param, value);
-		if (error) return { error: error };
+		const error = checkUserAllowedParameters(param, value);
+
+		if (error) return { error };
 
 		// Special case for `stop_words`
 		if (param === 'stop_words') {

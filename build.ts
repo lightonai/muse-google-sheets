@@ -1,17 +1,17 @@
-import { build } from 'tsup';
 import { readFile, writeFile } from 'fs/promises';
+import { build } from 'tsup';
 import prettier from 'prettier';
 
 const warnings = ['\nWarnings:'];
 const lightonMuseFile = './node_modules/lighton-muse/dist/index.js';
 
 // Patch `lighton-muse` dependency to avoid bundling `node-fetch`.
-let lightonMuseContent = await readFile(lightonMuseFile, 'utf-8');
+const lightonMuseContent = await readFile(lightonMuseFile, 'utf-8');
 
 try {
 	await writeFile(
 		lightonMuseFile,
-		lightonMuseContent.replace(/import .* from "node-fetch";\n/g, '')
+		lightonMuseContent.replace(/import .* from "node-fetch";\n/gu, '')
 	);
 
 	warnings.push('⚠️ Patched lighton-muse to avoid bundling node-fetch.');
@@ -36,27 +36,29 @@ await build({
 
 // Retrieve the prettier config
 const prettierConfig = await prettier.resolveConfig('.prettierrc.json');
+
 if (!prettierConfig) {
 	throw new Error('No prettier config found');
 }
 
 // Get the generated JS bundle
-let bundleContent = await readFile('./dist/index.js', 'utf8');
+const bundleContent = await readFile('./dist/index.js', 'utf8');
 
 // Extract the banner ('use strict';) and the IIFE (Immediately Invoked Function Expression) body
-let result = bundleContent.match(
+const result = bundleContent.match(
 	/(?<banner>.*)\n\(\(\) => \{\n(?<body>(.*?\n)*)\}\)\(\);/muy
 );
+
 if (!result) {
 	throw new Error('Could not find code to transform');
 }
 
-let output = `\
+const output = `\
 /* Code generated with \`tsup\` and a custom tool from LightOn */
 
 ${result.groups?.banner}
 
-${result.groups?.body.replace(/\n {4}/g, '\n')}
+${result.groups?.body.replace(/\n {4}/gu, '\n')}
 `;
 
 // Format the output using prettier
