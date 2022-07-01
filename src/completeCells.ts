@@ -5,56 +5,83 @@ import {
 	ApiCreateOptions,
 	ApiRequestOptions,
 	ApiCreateParams,
+	ApiMode,
 } from 'lighton-muse';
 import { API_KEY_PROP, API_MODEL_PROP } from './index.js';
 import { MuseRequest } from './client.js';
 
 type RecordTypes<K> = {
-	[P in keyof K]: K[P] extends infer T | undefined
-		? T extends string
-			? 'string'
-			: T extends boolean
-			? 'boolean'
-			: T extends number
-			? 'number'
-			: T extends string[]
-			? 'string'
-			: never
+	[P in keyof K]: K[P] extends string
+		? 'string'
+		: K[P] extends boolean
+		? 'boolean'
+		: K[P] extends number
+		? 'number'
+		: K[P] extends string[]
+		? 'string'
 		: never;
 };
 
-type UserAllowedRequestOptions = Pick<ApiCreateOptions, 'n_tokens' | 'best_of'>;
-const USER_ALLOWED_REQUEST_OPTIONS: RecordTypes<UserAllowedRequestOptions> = {
-	n_tokens: 'number',
-	best_of: 'number',
-};
-
-type UserAllowedRequestParams = Pick<
-	ApiCreateParams,
-	| 'mode'
-	| 'temperature'
-	| 'p'
-	| 'k'
-	| 'biases'
-	| 'presence_penalty'
-	| 'frequency_penalty'
-	| 'stop_words'
-	| 'concat_prompt'
-	| 'seed'
-	| 'skill'
+// TODO: handle more parameters
+type UserAllowedRequestParams = Omit<
+	Required<ApiCreateParams>,
+	'n_completions' | 'biases' | 'return_logprobs'
 >;
 const USER_ALLOWED_REQUEST_PARAMS: RecordTypes<UserAllowedRequestParams> = {
+	n_tokens: 'number',
+	best_of: 'number',
+	// TODO: Handle special case
 	mode: 'string',
 	temperature: 'number',
 	p: 'number',
 	k: 'number',
 	presence_penalty: 'number',
 	frequency_penalty: 'number',
-	// TODO: handle special case with `;` (string[])
+	// Special case handled lower (split string on `;`)
 	stop_words: 'string',
 	concat_prompt: 'boolean',
 	seed: 'number',
 	skill: 'string',
+};
+
+const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+
+const isUserAllowedRequestParamKey = (
+	key: string
+): key is keyof UserAllowedRequestParams =>
+	typeof USER_ALLOWED_REQUEST_PARAMS[
+		key as keyof UserAllowedRequestParams
+	] !== 'undefined';
+
+const isUserAllowedRequestParam = (
+	key: keyof UserAllowedRequestParams,
+	value: unknown
+): key is keyof UserAllowedRequestParams => {
+	if (typeof value === USER_ALLOWED_REQUEST_PARAMS[key]) {
+		// If the mode param is not a valid model, return false
+		if (
+			key === 'mode' &&
+			!Object.values(ApiMode).includes(value as ApiMode)
+		) {
+			spreadsheet.toast(
+				`Invalid parameter type: ${key} must be one of ${Object.values(
+					ApiMode
+				).join(' / ')}`
+			);
+
+			return false;
+		}
+
+		return true;
+	}
+
+	spreadsheet.toast(
+		`Invalid parameter type: ${key} must be of type "${
+			USER_ALLOWED_REQUEST_PARAMS[key]
+		}" and is type "${typeof value}"`
+	);
+
+	return false;
 };
 
 export function completeCells() {
@@ -97,7 +124,6 @@ export function completeCells() {
 
 		let request = _createRequestOptions(prompt, params, values);
 
-		Logger.log(request);
 		batchRequest.push(request);
 	}
 
@@ -107,16 +133,15 @@ export function completeCells() {
 		batchRequest
 	);
 
-	if (error) {
-		Logger.log(error);
+	if (error) throw error;
+	if (!response) throw new Error('Unreachable');
 
-		return spreadsheet.toast(error.message, 'Error!');
-	}
-	if (!response) throw new Error('Undefined behavior');
+	Logger.log(response);
 
 	for (let index = 0; index < response.outputs.length; index++) {
 		const output = response.outputs[index][0].completions[0].output_text;
 
+		// Cells coordinates are 1-indexed
 		range.getCell(index + 2, range.getNumColumns()).setValue(output);
 	}
 
@@ -127,7 +152,7 @@ export function completeCells() {
 }
 
 function _validateFirstRow(row: any[]): {
-	params?: string[];
+	params?: (keyof UserAllowedRequestParams)[];
 	error?: string;
 } {
 	// Omit the first and last columns (prompt and completion)
@@ -140,10 +165,7 @@ function _validateFirstRow(row: any[]): {
 		}
 
 		// Validate the parameter name
-		if (
-			!Object.keys(USER_ALLOWED_REQUEST_OPTIONS).includes(param) &&
-			!Object.keys(USER_ALLOWED_REQUEST_PARAMS).includes(param)
-		) {
+		if (!isUserAllowedRequestParamKey(param)) {
 			return {
 				error: `Parameter does not exist: ${param || '<empty>'}`,
 			};
@@ -155,55 +177,35 @@ function _validateFirstRow(row: any[]): {
 
 function _createRequestOptions(
 	text: string,
-	params: string[],
+	parameters: (keyof UserAllowedRequestParams)[],
 	values: any[]
 ): ApiRequestOptions<Endpoints.Create> {
-	if (params.length !== values.length) {
+	if (parameters.length !== values.length) {
 		throw new Error('Parameters and values do not match.');
 	}
 
-	const requestOptions: ApiCreateOptions = {
-		text,
-		params: {
-			concat_prompt: true,
-		},
-	};
+	const params: ApiCreateParams = {};
 
-	for (let param of params) {
-		const value = values.shift();
+	for (let param of parameters) {
+		let value = values.shift();
 
 		// Skip empty parameters
 		if (value === '') continue;
 
 		// Add the parameter to the request
-		if (Object.keys(USER_ALLOWED_REQUEST_PARAMS).includes(param)) {
-			if (
-				typeof param !==
-				USER_ALLOWED_REQUEST_PARAMS[
-					param as keyof UserAllowedRequestParams
-				]
-			) {
-				// TODO: handle error
-				continue;
-			}
+		// TODO: cleanup this shit
+		if (!isUserAllowedRequestParam(param, value))
+			throw new Error('Reachable');
 
-			Object.assign(requestOptions.params as ApiCreateParams, {
-				[param]: value,
-			});
-		} else if (Object.keys(USER_ALLOWED_REQUEST_OPTIONS).includes(param)) {
-			if (
-				typeof param !==
-				USER_ALLOWED_REQUEST_OPTIONS[
-					param as keyof UserAllowedRequestOptions
-				]
-			) {
-				// TODO: handle error
-				continue;
-			}
-
-			Object.assign(requestOptions, { [param]: value });
+		// Special case for `stop_words`
+		if (param === 'stop_words') {
+			value = value.split(';');
 		}
+
+		params[param] = value;
 	}
 
-	return requestOptions;
+	Logger.log(params);
+
+	return { text, params };
 }
