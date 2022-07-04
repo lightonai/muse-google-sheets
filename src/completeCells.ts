@@ -3,9 +3,9 @@ import {
 	ApiBatchRequestOptions,
 	ApiCreateOptions,
 	ApiCreateParams,
-	ApiModels,
-	ApiModes,
-	Endpoints,
+	ApiModel,
+	ApiMode,
+	Endpoint,
 } from 'lighton-muse';
 import { MuseRequest } from './client.js';
 
@@ -59,12 +59,9 @@ function checkUserAllowedParameters(
 	}
 
 	// If the mode parameter is not a valid model, return false
-	if (
-		key === 'mode' &&
-		!Object.values(ApiModes).includes(value as ApiModes)
-	) {
+	if (key === 'mode' && !Object.values(ApiMode).includes(value as ApiMode)) {
 		return `Invalid parameter type: ${key} must be one of "${Object.values(
-			ApiModes
+			ApiMode
 		).join('" / "')}"`;
 	}
 
@@ -98,7 +95,7 @@ export function completeCells() {
 		);
 	}
 
-	const batchRequest: ApiBatchRequestOptions<Endpoints.Create> = [];
+	const batchRequest: ApiBatchRequestOptions<Endpoint.Create> = [];
 
 	const [firstRow, ...rows] = range.getValues();
 
@@ -125,8 +122,8 @@ export function completeCells() {
 	}
 
 	const { error, response } = new MuseRequest(apiKey).query(
-		userProperties.getProperty(API_MODEL_PROP) as ApiModels,
-		Endpoints.Create,
+		userProperties.getProperty(API_MODEL_PROP) as ApiModel,
+		Endpoint.Create,
 		batchRequest
 	);
 

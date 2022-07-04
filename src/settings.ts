@@ -1,5 +1,5 @@
 import { API_KEY_PROP, API_MODEL_PROP } from './index.js';
-import { ApiModels, Endpoints } from 'lighton-muse';
+import { ApiModel, Endpoint } from 'lighton-muse';
 import { MuseRequest } from './client.js';
 
 export function registerApiKey() {
@@ -19,13 +19,9 @@ export function registerApiKey() {
 	if (button === ui.Button.OK) {
 		const request = new MuseRequest(text);
 
-		const { error } = request.query(
-			ApiModels.OrionFrV2,
-			Endpoints.Tokenize,
-			{
-				text: 'Is this a valid API key?',
-			}
-		);
+		const { error } = request.query(ApiModel.OrionFrV2, Endpoint.Tokenize, {
+			text: 'Is this a valid API key?',
+		});
 
 		if (error) return ui.alert(`Something went wrong: ${error.message}`);
 
@@ -48,7 +44,7 @@ export function dropDownModal() {
 	ui.showModalDialog(dialog, 'Select Model');
 }
 
-export function selectModel(model: ApiModels) {
+export function selectModel(model: ApiModel) {
 	const userProperties = PropertiesService.getUserProperties();
 
 	userProperties.setProperty(API_MODEL_PROP, model);

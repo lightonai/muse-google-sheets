@@ -1,9 +1,9 @@
 import {
 	type ApiBatchRequestOptions,
-	type ApiModels,
+	type ApiModel,
 	type ApiRequestOptions,
 	type ApiResponse,
-	Endpoints,
+	Endpoint,
 	MuseResponse,
 	isApiResponseBadRequest,
 	isApiResponseError,
@@ -13,9 +13,9 @@ export class MuseRequest {
 	constructor(private apiKey: string) {}
 
 	public query<
-		E extends Endpoints,
+		E extends Endpoint,
 		O extends ApiRequestOptions<E> | ApiBatchRequestOptions<E>
-	>(model: ApiModels, endpoint: E, options: O): MuseResponse<E> {
+	>(model: ApiModel, endpoint: E, options: O): MuseResponse<E> {
 		const response = this.raw(model, endpoint, options);
 		const body = jsonParseOrNull(response.getContentText('utf-8'));
 
@@ -39,8 +39,8 @@ export class MuseRequest {
 		};
 	}
 
-	public raw<E extends Endpoints>(
-		model: ApiModels,
+	public raw<E extends Endpoint>(
+		model: ApiModel,
 		endpoint: E,
 		options: ApiRequestOptions<E> | ApiBatchRequestOptions<E>
 	): GoogleAppsScript.URL_Fetch.HTTPResponse {
