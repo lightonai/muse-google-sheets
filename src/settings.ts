@@ -1,4 +1,4 @@
-import { API_KEY_PROP, API_MODEL_PROP } from './index.js';
+import { API_KEY_PROP, API_MODEL_PROP, USE_STAGING_URL_PROP } from './index.js';
 import { ApiModel, Endpoint } from 'lighton-muse';
 import { MuseRequest } from './client.js';
 
@@ -48,4 +48,19 @@ export function selectModel(model: ApiModel) {
 	const userProperties = PropertiesService.getUserProperties();
 
 	userProperties.setProperty(API_MODEL_PROP, model);
+}
+
+export function toggleStagingUrl() {
+	const userProperties = PropertiesService.getUserProperties();
+	const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+
+	if (userProperties.getProperty(USE_STAGING_URL_PROP)) {
+		userProperties.deleteProperty(USE_STAGING_URL_PROP);
+
+		spreadsheet.toast('Now using production URL.');
+	} else {
+		userProperties.setProperty(USE_STAGING_URL_PROP, 'true');
+
+		spreadsheet.toast('Now using staging URL.');
+	}
 }

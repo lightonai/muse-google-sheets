@@ -44,14 +44,13 @@ export class MuseRequest {
 		endpoint: E,
 		options: ApiRequestOptions<E> | ApiBatchRequestOptions<E>
 	): GoogleAppsScript.URL_Fetch.HTTPResponse {
-		/*
-		 * TODO: use prod api endpoint
-		 * const url = `${MUSE_API_BASE_URL}${endpoint}`;
-		 */
+		const userProperties = PropertiesService.getUserProperties();
 
-		const url = `https://muse-staging-api.lighton.ai/muse/v1/${endpoint}`;
+		const base_url = userProperties.getProperty(USE_STAGING_URL_PROP)
+			? 'https://muse-staging-api.lighton.ai/muse/v1/'
+			: MUSE_API_BASE_URL;
 
-		const response = UrlFetchApp.fetch(url, {
+		const response = UrlFetchApp.fetch(`${base_url}${endpoint}`, {
 			method: 'post',
 			headers: {
 				'Content-Type': 'application/json',

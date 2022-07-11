@@ -1,4 +1,11 @@
-import { dropDownModal, registerApiKey, selectModel } from './settings.js';
+/* eslint-disable no-unused-expressions */
+
+import {
+	dropDownModal,
+	registerApiKey,
+	selectModel,
+	toggleStagingUrl,
+} from './settings.js';
 import { completeCells } from './completeCells.js';
 
 export function onInstall(event: GoogleAppsScript.Events.SheetsOnOpen) {
@@ -19,9 +26,10 @@ export function onOpen(_event: GoogleAppsScript.Events.SheetsOnOpen) {
 		.addToUi();
 
 	// Include this function for the dropdown template
-	// eslint-disable-next-line no-unused-expressions
 	selectModel.name;
+	toggleStagingUrl.name;
 }
 
 export const API_KEY_PROP = 'muse-api-key';
 export const API_MODEL_PROP = 'muse-api-model';
+export const USE_STAGING_URL_PROP = 'muse-use-staging-url';
