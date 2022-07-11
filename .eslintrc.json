@@ -98,7 +98,6 @@
 		"linebreak-style": ["warn", "unix"],
 		"lines-around-directive": "warn",
 		"lines-between-class-members": "warn",
-		"max-classes-per-file": "warn",
 		"max-depth": "warn",
 		"max-len": "off",
 		"max-lines": "warn",

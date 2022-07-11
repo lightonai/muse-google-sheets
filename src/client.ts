@@ -4,10 +4,28 @@ import {
 	type ApiRequestOptions,
 	type ApiResponse,
 	Endpoint,
+	MUSE_API_BASE_URL,
 	MuseResponse,
 	isApiResponseBadRequest,
 	isApiResponseError,
 } from 'lighton-muse';
+import { USE_STAGING_URL_PROP } from './index.js';
+
+class MuseApiError extends Error {
+	constructor(message: string, public requestId?: string) {
+		super(message);
+
+		this.name = 'MuseApiError';
+	}
+
+	toString() {
+		if (this.requestId) {
+			return `MuseApiError: ${this.message} (requestId: ${this.requestId})`;
+		}
+
+		return `MuseApiError: ${this.message}`;
+	}
+}
 
 export class MuseRequest {
 	constructor(private apiKey: string) {}
@@ -23,12 +41,12 @@ export class MuseRequest {
 			response.getResponseCode() !== 200 &&
 			isApiResponseBadRequest(body)
 		) {
-			return { error: new Error(body.detail), response: null };
+			return { error: new MuseApiError(body.detail), response: null };
 		}
 
 		if (isApiResponseError(body)) {
 			return {
-				error: new Error(`${body.request_id} - ${body.error_msg}`),
+				error: new MuseApiError(body.error_msg, body.request_id),
 				response: null,
 			};
 		}
