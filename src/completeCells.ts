@@ -3,45 +3,44 @@ import {
 	ApiBatchRequestOptions,
 	ApiCreateOptions,
 	ApiCreateParams,
-	ApiModel,
 	ApiMode,
+	ApiModel,
 	Endpoint,
 } from 'lighton-muse';
 import { MuseRequest } from './client.js';
 
-type RecordTypes<K> = {
-	[P in keyof K]: K[P] extends string
-		? 'string'
-		: K[P] extends boolean
-		? 'boolean'
-		: K[P] extends number
-		? 'number'
-		: K[P] extends string[]
-		? 'string'
-		: never;
-};
-
-// TODO: handle more parameters
+// IDEA: handle more parameters
 type UserAllowedParameters = Omit<
 	Required<ApiCreateParams>,
 	'n_completions' | 'biases' | 'return_logprobs'
 >;
-const USER_ALLOWED_PARAMETERS: RecordTypes<UserAllowedParameters> = {
-	n_tokens: 'number',
-	best_of: 'number',
-	mode: 'string',
-	temperature: 'number',
-	p: 'number',
-	k: 'number',
-	presence_penalty: 'number',
-	frequency_penalty: 'number',
-	// Special case handled (split string on `;`)
-	stop_words: 'string',
-	concat_prompt: 'boolean',
-	seed: 'number',
-	skill: 'string',
-};
 
+type RecordTypes<T> = {
+	[P in keyof T]: T[P] extends string
+		? { type: 'string' }
+		: T[P] extends boolean
+		? { type: 'boolean' }
+		: T[P] extends number
+		? { type: 'number'; min: number; max: number }
+		: T[P] extends string[]
+		? { type: 'string' }
+		: never;
+};
+const USER_ALLOWED_PARAMETERS: RecordTypes<UserAllowedParameters> = {
+	n_tokens: { type: 'number', min: 1, max: 1023 },
+	temperature: { type: 'number', min: 0, max: 10 },
+	p: { type: 'number', min: 0, max: 1 },
+	k: { type: 'number', min: 1, max: 512 },
+	best_of: { type: 'number', min: 1, max: Number.MAX_SAFE_INTEGER },
+	presence_penalty: { type: 'number', min: 0, max: 1 },
+	frequency_penalty: { type: 'number', min: 0, max: 1 },
+	seed: { type: 'number', min: 0, max: Number.MAX_SAFE_INTEGER },
+	mode: { type: 'string' },
+	// Special case handled (split string on `;`)
+	stop_words: { type: 'string' },
+	concat_prompt: { type: 'boolean' },
+	skill: { type: 'string' },
+};
 const isUserAllowedParameterKey = (
 	key: string
 ): key is keyof UserAllowedParameters =>
@@ -52,7 +51,9 @@ function checkUserAllowedParameters(
 	key: keyof UserAllowedParameters,
 	value: unknown
 ): string | null {
-	if (!(typeof value === USER_ALLOWED_PARAMETERS[key])) {
+	const validation = USER_ALLOWED_PARAMETERS[key];
+
+	if (typeof value !== validation.type) {
 		return `Invalid parameter type: ${key} must be of type "${
 			USER_ALLOWED_PARAMETERS[key]
 		}" and is type "${typeof value}"`;
@@ -63,6 +64,12 @@ function checkUserAllowedParameters(
 		return `Invalid parameter type: ${key} must be one of "${Object.values(
 			ApiMode
 		).join('" / "')}"`;
+	} else if (
+		validation.type === 'number' &&
+		typeof value === 'number' &&
+		(validation.min > value || value > validation.max)
+	) {
+		return `Invalid parameter type: ${key} must be between ${validation.min} and ${validation.max}`;
 	}
 
 	return null;
