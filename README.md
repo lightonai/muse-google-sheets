@@ -2,7 +2,7 @@
 
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Twitter](https://img.shields.io/twitter/follow/LightOnIO?style=social)](https://twitter.com/LightOnIO)
 
-JavaScript bindings for the Muse API: production-ready intelligence primitives powered by state-of-the-art language models. By LightOn.
+Google Sheets extension for the Muse API: production-ready intelligence primitives powered by state-of-the-art language models. By LightOn.
 
 > Create. Process. Understand. Learn.
 
@@ -14,17 +14,19 @@ Uplift your product with the natural language generation & understanding capabil
 
 ## Installation and documentation
 
-To add the Muse API client to your project, run one of the following commands:
+To locally install the extension on your own Google account:
 
 ```bash
-yarn add lighton-muse
+# Install the dependencies
+yarn install
+
+# Login yourself with the Google Clasp CLI
+yarn clasp login
+# Create a new project for Sheets
+yarn clasp create
+
+# You are now ready to build and push your code to Google Script
+yarn push
 ```
 
-or
-
-```bash
-npm install lighton-muse
-```
-
-The library documentation is available at [lightonai.github.io/js-lightonmuse/](https://lightonai.github.io/js-lightonmuse/).
 Guides and documentation can be found at the [API docs website](https://muse-docs.lighton.ai).
