@@ -199,7 +199,7 @@ export function completeCells() {
 		batchRequest.push(options);
 	}
 
-	// Make the request to the api
+	// Make the request to the Api
 	const { error, response } = new MuseRequest(apiKey).query(
 		userProperties.getProperty(API_MODEL_PROP) as ApiModel,
 		Endpoint.Create,
@@ -213,14 +213,7 @@ export function completeCells() {
 		const output = response.outputs[index][0].completions[0].output_text;
 
 		// Cells coordinates are 1-indexed
-		const cell = range.getCell(index + 2, range.getLastColumn());
-
-		// TODO: escape if there is already a value in the cell
-		if (cell.getValue() !== '') {
-			break;
-		}
-
-		cell.setValue(output);
+		range.getCell(index + 1 + 1, range.getLastColumn()).setValue(output);
 	}
 
 	spreadsheet.toast(
