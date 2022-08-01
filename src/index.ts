@@ -1,6 +1,5 @@
 import {
-	gettingStarted,
-	privacyPolicy,
+	help,
 	registerApiKey,
 	selectModel,
 	toggleStagingUrl,
@@ -24,12 +23,7 @@ export function onOpen(_event: GoogleAppsScript.Events.SheetsOnOpen) {
 				.addItem('Select Model', selectModel.name)
 				.addItem('Register API Key', registerApiKey.name)
 		)
-		.addSubMenu(
-			ui
-				.createMenu('Help')
-				.addItem('Getting started!', gettingStarted.name)
-				.addItem('Privacy Policy', privacyPolicy.name)
-		)
+		.addItem('Help', help.name)
 		.addToUi();
 
 	// Expose this function for LightOn internal use

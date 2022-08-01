@@ -213,7 +213,7 @@ export function completeCells() {
 		const output = response.outputs[index][0].completions[0].output_text;
 
 		// Cells coordinates are 1-indexed
-		const cell = range.getCell(index + 2, range.getNumColumns());
+		const cell = range.getCell(index + 2, range.getLastColumn());
 
 		// TODO: escape if there is already a value in the cell
 		if (cell.getValue() !== '') {

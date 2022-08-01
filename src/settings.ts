@@ -82,26 +82,12 @@ export function toggleStagingUrl() {
 	}
 }
 
-export function gettingStarted() {
+export function help() {
 	const ui = SpreadsheetApp.getUi();
-	const dialog = HtmlService.createHtmlOutputFromFile(
-		'templates/getting-started'
-	)
+	const dialog = HtmlService.createHtmlOutputFromFile('templates/help')
 		.setSandboxMode(HtmlService.SandboxMode.IFRAME)
 		.setWidth(600)
-		.setHeight(50);
+		.setHeight(100);
 
-	ui.showModalDialog(dialog, 'Getting started!');
-}
-
-export function privacyPolicy() {
-	const ui = SpreadsheetApp.getUi();
-	const dialog = HtmlService.createHtmlOutputFromFile(
-		'templates/privacy-policy'
-	)
-		.setSandboxMode(HtmlService.SandboxMode.IFRAME)
-		.setWidth(600)
-		.setHeight(50);
-
-	ui.showModalDialog(dialog, 'Privacy Policy');
+	ui.showModalDialog(dialog, 'Help!');
 }
