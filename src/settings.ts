@@ -34,17 +34,22 @@ export function registerApiKey() {
 }
 
 // IDEA: replace this with a cell with data validation
-export function dropDownModal() {
+export function selectModel() {
 	const ui = SpreadsheetApp.getUi();
-	const dialog = HtmlService.createHtmlOutputFromFile('templates/dropdown')
+	const dialog = HtmlService.createHtmlOutputFromFile(
+		'templates/model-dropdown'
+	)
 		.setSandboxMode(HtmlService.SandboxMode.IFRAME)
 		.setWidth(350)
 		.setHeight(100);
 
-	ui.showModalDialog(dialog, 'Select Model');
+	ui.showModalDialog(dialog, 'Select the model');
+
+	// Include this function for the template
+	innerSelectModel.name;
 }
 
-export function selectModel(model: ApiModel) {
+export function innerSelectModel(model: ApiModel) {
 	const userProperties = PropertiesService.getUserProperties();
 
 	userProperties.setProperty(API_MODEL_PROP, model);

@@ -8,6 +8,7 @@
 			rel="stylesheet"
 			href="https://ssl.gstatic.com/docs/script/css/add-ons.css"
 		/>
+
 		<!-- Expand the select item to take as much place as possible -->
 		<style>
 			#choice {
@@ -20,14 +21,17 @@
 	<script>
 		function submit() {
 			const choice = document.getElementById('choice').value;
-			google.script.run.withSuccessHandler(onSuccess).selectModel(choice);
+			google.script.run
+				.withSuccessHandler(onSuccess)
+				.innerSelectModel(choice);
 		}
+
 		function onSuccess() {
 			google.script.host.close();
 		}
 	</script>
 
-	<body onload="setup()" onsubmit="submit()">
+	<body onsubmit="submit()">
 		<form>
 			<select id="choice">
 				<option value="orion-fr">Orion Fr</option>

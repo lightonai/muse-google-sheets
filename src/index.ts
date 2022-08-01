@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-expressions */
 
 import {
-	dropDownModal,
+	gettingStarted,
 	registerApiKey,
 	selectModel,
 	toggleStagingUrl,
@@ -17,10 +17,11 @@ export function onOpen(_event: GoogleAppsScript.Events.SheetsOnOpen) {
 
 	ui.createMenu('Muse')
 		.addItem('Complete Cells', completeCells.name)
+		.addItem('Getting started!', gettingStarted.name)
 		.addSubMenu(
 			ui
 				.createMenu('Settings')
-				.addItem('Select Model', dropDownModal.name)
+				.addItem('Select Model', selectModel.name)
 				.addItem('Register API Key', registerApiKey.name)
 		)
 		.addToUi();
