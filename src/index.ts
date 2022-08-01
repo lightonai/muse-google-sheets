@@ -25,17 +25,18 @@ export function onOpen(_event: GoogleAppsScript.Events.SheetsOnOpen) {
 				.addItem('Register API Key', registerApiKey.name)
 		)
 		.addItem('Help', help.name)
+		.addItem('Load example sheet', loadExampleSheet.name)
 		.addToUi();
 
 	// Expose this function for LightOn internal use
 	toggleStagingUrl.name;
 }
 
-// Store the API key
-export const API_KEY_PROP = 'muse-api-key';
+// User property to store their API key
+export const USER_PROP_API_KEY = 'muse-api-key';
 
-// Store the current selected model
-export const API_MODEL_PROP = 'muse-api-model';
+// User property to store which API URL to use (staging or production)
+export const USER_PROP_USE_STAGING_URL = 'muse-use-staging-url';
 
-// Store which Api URL to use (staging or production)
-export const USE_STAGING_URL_PROP = 'muse-use-staging-url';
+// Spreadsheet metadata to store the selected model
+export const SHEET_META_API_MODEL = 'muse-api-model';

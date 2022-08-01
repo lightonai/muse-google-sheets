@@ -1,4 +1,3 @@
-import { API_KEY_PROP, API_MODEL_PROP } from './index.js';
 import {
 	ApiBatchRequestOptions,
 	ApiCreateOptions,
@@ -7,6 +6,7 @@ import {
 	ApiModel,
 	Endpoint,
 } from 'lighton-muse';
+import { SHEET_META_API_MODEL, USER_PROP_API_KEY } from './index.js';
 import { MuseRequest } from './client.js';
 
 // IDEA: handle more parameters
@@ -46,6 +46,12 @@ const isUserAllowedParameterKey = (
 ): key is keyof UserAllowedParameters =>
 	typeof USER_ALLOWED_PARAMETERS[key as keyof UserAllowedParameters] !==
 	'undefined';
+
+const _getModel = (sheet: GoogleAppsScript.Spreadsheet.Sheet) =>
+	sheet
+		.getDeveloperMetadata()
+		.find((meta) => meta.getKey() === SHEET_META_API_MODEL)
+		?.getValue() ?? ApiModel.OrionEn;
 
 function _checkUserAllowedParameters(
 	key: keyof UserAllowedParameters,
@@ -147,10 +153,11 @@ export function completeCells() {
 	const begin = new Date();
 
 	const userProperties = PropertiesService.getUserProperties();
-	const apiKey = userProperties.getProperty(API_KEY_PROP);
+	const apiKey = userProperties.getProperty(USER_PROP_API_KEY);
 
 	const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-	const range = spreadsheet.getActiveRange();
+	const sheet = SpreadsheetApp.getActiveSheet();
+	const range = sheet.getActiveRange();
 
 	if (!apiKey) {
 		return spreadsheet.toast(
@@ -201,7 +208,7 @@ export function completeCells() {
 
 	// Make the request to the Api
 	const { error, response } = new MuseRequest(apiKey).query(
-		userProperties.getProperty(API_MODEL_PROP) as ApiModel,
+		_getModel(sheet) as ApiModel,
 		Endpoint.Create,
 		batchRequest
 	);
@@ -213,7 +220,9 @@ export function completeCells() {
 		const output = response.outputs[index][0].completions[0].output_text;
 
 		// Cells coordinates are 1-indexed
-		range.getCell(index + 1 + 1, range.getLastColumn()).setValue(output);
+		range
+			.getCell(index + 1 + 1, range.getLastColumn())
+			.setValue(output.trim());
 	}
 
 	spreadsheet.toast(

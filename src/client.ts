@@ -9,7 +9,7 @@ import {
 	isApiResponseBadRequest,
 	isApiResponseError,
 } from 'lighton-muse';
-import { USE_STAGING_URL_PROP } from './index.js';
+import { USER_PROP_USE_STAGING_URL } from './index.js';
 
 class MuseApiError extends Error {
 	constructor(message: string, public requestId?: string) {
@@ -64,7 +64,7 @@ export class MuseRequest {
 	): GoogleAppsScript.URL_Fetch.HTTPResponse {
 		const userProperties = PropertiesService.getUserProperties();
 
-		const base_url = userProperties.getProperty(USE_STAGING_URL_PROP)
+		const base_url = userProperties.getProperty(USER_PROP_USE_STAGING_URL)
 			? 'https://muse-staging-api.lighton.ai/muse/v1/'
 			: MUSE_API_BASE_URL;
 
