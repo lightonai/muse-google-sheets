@@ -93,3 +93,15 @@ export function gettingStarted() {
 
 	ui.showModalDialog(dialog, 'Getting started!');
 }
+
+export function privacyPolicy() {
+	const ui = SpreadsheetApp.getUi();
+	const dialog = HtmlService.createHtmlOutputFromFile(
+		'templates/privacy-policy'
+	)
+		.setSandboxMode(HtmlService.SandboxMode.IFRAME)
+		.setWidth(600)
+		.setHeight(50);
+
+	ui.showModalDialog(dialog, 'Privacy Policy');
+}

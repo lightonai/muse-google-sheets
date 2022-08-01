@@ -1,5 +1,6 @@
 import {
 	gettingStarted,
+	privacyPolicy,
 	registerApiKey,
 	selectModel,
 	toggleStagingUrl,
@@ -16,13 +17,18 @@ export function onOpen(_event: GoogleAppsScript.Events.SheetsOnOpen) {
 	const ui = SpreadsheetApp.getUi();
 
 	ui.createMenu('Muse')
-		.addItem('Complete Cells', completeCells.name)
-		.addItem('Getting started!', gettingStarted.name)
+		.addItem('Complete cells', completeCells.name)
 		.addSubMenu(
 			ui
 				.createMenu('Settings')
 				.addItem('Select Model', selectModel.name)
 				.addItem('Register API Key', registerApiKey.name)
+		)
+		.addSubMenu(
+			ui
+				.createMenu('Help')
+				.addItem('Getting started!', gettingStarted.name)
+				.addItem('Privacy Policy', privacyPolicy.name)
 		)
 		.addToUi();
 
