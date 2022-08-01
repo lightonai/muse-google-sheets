@@ -154,8 +154,15 @@ function _validateFirstRow(row: any[]): {
 	params?: (keyof UserAllowedParameters)[];
 	error?: string;
 } {
-	// Omit the first and last columns (prompt and completion)
-	const parameters = row.slice(1, -1);
+	// Omit last column (completion)
+	const [prompt, ...parameters] = row.slice(0, -1);
+
+	// Check that the upper-right cell is the text `prompt`
+	if (!(typeof prompt === 'string' && prompt.toLowerCase() === 'prompt')) {
+		return {
+			error: 'The upper-right cell must contain the text `Prompt`.',
+		};
+	}
 
 	for (const param of parameters) {
 		// Verify that the parameter is a valid string
