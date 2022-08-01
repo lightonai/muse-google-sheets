@@ -47,7 +47,7 @@ const isUserAllowedParameterKey = (
 	typeof USER_ALLOWED_PARAMETERS[key as keyof UserAllowedParameters] !==
 	'undefined';
 
-function checkUserAllowedParameters(
+function _checkUserAllowedParameters(
 	key: keyof UserAllowedParameters,
 	value: unknown
 ): string | null {
@@ -73,81 +73,6 @@ function checkUserAllowedParameters(
 	}
 
 	return null;
-}
-
-export function completeCells() {
-	const begin = new Date();
-
-	const userProperties = PropertiesService.getUserProperties();
-	const apiKey = userProperties.getProperty(API_KEY_PROP);
-
-	const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-	const range = spreadsheet.getActiveRange();
-
-	if (!apiKey) {
-		return spreadsheet.toast(
-			'You must set your API key in order to use Muse.',
-			'Error!'
-		);
-	}
-
-	if (!range) {
-		return spreadsheet.toast('You did not select a range.', 'Error!');
-	}
-
-	if (!(range.getNumColumns() >= 2 && range.getNumRows() >= 2)) {
-		return spreadsheet.toast(
-			'You need to select a range with at least two columns and two rows.',
-			'Error!'
-		);
-	}
-
-	const batchRequest: ApiBatchRequestOptions<Endpoint.Create> = [];
-
-	const [firstRow, ...rows] = range.getValues();
-
-	const { error: rowValidationError, params } = _validateFirstRow(firstRow);
-
-	if (rowValidationError) {
-		return spreadsheet.toast(rowValidationError, 'Error!');
-	}
-	if (!params) throw new Error('Unreachable');
-
-	for (const row of rows) {
-		const [prompt, ...values] = row.slice(0, -1);
-
-		const { error, options } = _createRequestOptions(
-			prompt,
-			params,
-			values
-		);
-
-		if (error) return spreadsheet.toast(error, 'Error!');
-		if (!options) throw new Error('Unreachable');
-
-		batchRequest.push(options);
-	}
-
-	const { error, response } = new MuseRequest(apiKey).query(
-		userProperties.getProperty(API_MODEL_PROP) as ApiModel,
-		Endpoint.Create,
-		batchRequest
-	);
-
-	if (error) throw error;
-	if (!response) throw new Error('Unreachable');
-
-	for (let index = 0; index < response.outputs.length; index++) {
-		const output = response.outputs[index][0].completions[0].output_text;
-
-		// Cells coordinates are 1-indexed
-		range.getCell(index + 2, range.getNumColumns()).setValue(output);
-	}
-
-	spreadsheet.toast(
-		`Done in ${(new Date().valueOf() - begin.valueOf()) / 1000}s`,
-		'Done!'
-	);
 }
 
 function _validateFirstRow(row: any[]): {
@@ -202,7 +127,7 @@ function _createRequestOptions(
 		if (value === '') continue;
 
 		// Check for invalid parameter types
-		const error = checkUserAllowedParameters(param, value);
+		const error = _checkUserAllowedParameters(param, value);
 
 		if (error) return { error };
 
@@ -216,4 +141,88 @@ function _createRequestOptions(
 	}
 
 	return { options: { text, params } };
+}
+
+export function completeCells() {
+	const begin = new Date();
+
+	const userProperties = PropertiesService.getUserProperties();
+	const apiKey = userProperties.getProperty(API_KEY_PROP);
+
+	const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+	const range = spreadsheet.getActiveRange();
+
+	if (!apiKey) {
+		return spreadsheet.toast(
+			'You must set your API key in order to use Muse.',
+			'Error!'
+		);
+	}
+
+	if (!range) {
+		return spreadsheet.toast('You did not select a range.', 'Error!');
+	}
+
+	if (!(range.getNumColumns() >= 2 && range.getNumRows() >= 2)) {
+		return spreadsheet.toast(
+			'You need to select a range with at least two columns and two rows.',
+			'Error!'
+		);
+	}
+
+	const batchRequest: ApiBatchRequestOptions<Endpoint.Create> = [];
+
+	const [firstRow, ...rows] = range.getValues();
+
+	const { error: rowValidationError, params } = _validateFirstRow(firstRow);
+
+	if (rowValidationError) {
+		return spreadsheet.toast(rowValidationError, 'Error!');
+	}
+	if (!params) throw new Error('Unreachable');
+
+	// Validate each row
+	for (const row of rows) {
+		const [prompt, ...values] = row.slice(0, -1);
+
+		const { error, options } = _createRequestOptions(
+			prompt,
+			params,
+			values
+		);
+
+		if (error) return spreadsheet.toast(error, 'Error!');
+		if (!options) throw new Error('Unreachable');
+
+		batchRequest.push(options);
+	}
+
+	// Make the request to the api
+	const { error, response } = new MuseRequest(apiKey).query(
+		userProperties.getProperty(API_MODEL_PROP) as ApiModel,
+		Endpoint.Create,
+		batchRequest
+	);
+
+	if (error) throw error;
+	if (!response) throw new Error('Unreachable');
+
+	for (let index = 0; index < response.outputs.length; index++) {
+		const output = response.outputs[index][0].completions[0].output_text;
+
+		// Cells coordinates are 1-indexed
+		const cell = range.getCell(index + 2, range.getNumColumns());
+
+		// TODO: escape if there is already a value in the cell
+		if (cell.getValue() !== '') {
+			break;
+		}
+
+		cell.setValue(output);
+	}
+
+	spreadsheet.toast(
+		`Done in ${(new Date().valueOf() - begin.valueOf()) / 1000}s`,
+		'Done!'
+	);
 }

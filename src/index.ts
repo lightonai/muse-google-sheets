@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-expressions */
-
 import {
 	gettingStarted,
 	registerApiKey,
@@ -8,10 +6,12 @@ import {
 } from './settings.js';
 import { completeCells } from './completeCells.js';
 
+// Executed when the extension is installed
 export function onInstall(event: GoogleAppsScript.Events.SheetsOnOpen) {
 	onOpen(event);
 }
 
+// Executed when the extension is loaded (when the sheets loads)
 export function onOpen(_event: GoogleAppsScript.Events.SheetsOnOpen) {
 	const ui = SpreadsheetApp.getUi();
 
@@ -26,11 +26,15 @@ export function onOpen(_event: GoogleAppsScript.Events.SheetsOnOpen) {
 		)
 		.addToUi();
 
-	// Include this function for the dropdown template
-	selectModel.name;
+	// Expose this function for LightOn internal use
 	toggleStagingUrl.name;
 }
 
+// Store the API key
 export const API_KEY_PROP = 'muse-api-key';
+
+// Store the current selected model
 export const API_MODEL_PROP = 'muse-api-model';
+
+// Store which Api URL to use (staging or production)
 export const USE_STAGING_URL_PROP = 'muse-use-staging-url';

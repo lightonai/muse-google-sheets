@@ -223,7 +223,7 @@
 		"no-underscore-dangle": "off",
 		"no-unmodified-loop-condition": "warn",
 		"no-unneeded-ternary": "warn",
-		"no-unused-expressions": "warn",
+		"no-unused-expressions": "off",
 
 		"no-use-before-define": "off",
 		"no-useless-call": "warn",
