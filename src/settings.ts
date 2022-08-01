@@ -64,3 +64,15 @@ export function toggleStagingUrl() {
 		spreadsheet.toast('Now using staging URL.');
 	}
 }
+
+export function gettingStarted() {
+	const ui = SpreadsheetApp.getUi();
+	const dialog = HtmlService.createHtmlOutputFromFile(
+		'templates/getting-started'
+	)
+		.setSandboxMode(HtmlService.SandboxMode.IFRAME)
+		.setWidth(600)
+		.setHeight(50);
+
+	ui.showModalDialog(dialog, 'Getting started!');
+}
