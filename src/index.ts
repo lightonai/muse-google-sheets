@@ -5,6 +5,7 @@ import {
 	toggleStagingUrl,
 } from './settings.js';
 import { completeCells } from './completeCells.js';
+import { loadExampleSheet } from './example.js';
 
 // Executed when the extension is installed
 export function onInstall(event: GoogleAppsScript.Events.SheetsOnOpen) {
