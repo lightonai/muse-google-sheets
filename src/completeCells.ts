@@ -155,18 +155,20 @@ export function completeCells() {
 	if (!apiKey) {
 		return spreadsheet.toast(
 			'You must set your API key in order to use Muse.',
-			'Error!'
+			'Error!',
+			0
 		);
 	}
 
 	if (!range) {
-		return spreadsheet.toast('You did not select a range.', 'Error!');
+		return spreadsheet.toast('You did not select a range.', 'Error!', 0);
 	}
 
 	if (!(range.getNumColumns() >= 2 && range.getNumRows() >= 2)) {
 		return spreadsheet.toast(
 			'You need to select a range with at least two columns and two rows.',
-			'Error!'
+			'Error!',
+			0
 		);
 	}
 
@@ -177,7 +179,7 @@ export function completeCells() {
 	const { error: rowValidationError, params } = _validateFirstRow(firstRow);
 
 	if (rowValidationError) {
-		return spreadsheet.toast(rowValidationError, 'Error!');
+		return spreadsheet.toast(rowValidationError, 'Error!', 0);
 	}
 	if (!params) throw new Error('Unreachable');
 
@@ -191,7 +193,7 @@ export function completeCells() {
 			values
 		);
 
-		if (error) return spreadsheet.toast(error, 'Error!');
+		if (error) return spreadsheet.toast(error, 'Error!', 0);
 		if (!options) throw new Error('Unreachable');
 
 		batchRequest.push(options);
