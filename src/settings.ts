@@ -3,34 +3,46 @@ import { ApiModel, Endpoint } from 'lighton-muse';
 import { MuseRequest } from './client.js';
 
 export function registerApiKey() {
-	const userProperties = PropertiesService.getUserProperties();
-
 	const ui = SpreadsheetApp.getUi();
 
-	const result = ui.prompt(
-		'Please enter your Muse API Key for authentication purposes!',
-		'Muse API Key:',
-		ui.ButtonSet.OK
-	);
+	const dialog = HtmlService.createHtmlOutputFromFile(
+		'templates/register-key'
+	)
+		.setSandboxMode(HtmlService.SandboxMode.IFRAME)
+		.setWidth(500)
+		.setHeight(100);
 
-	const button = result.getSelectedButton();
-	const text = result.getResponseText();
+	ui.showModalDialog(dialog, 'Register your API key');
 
-	if (button === ui.Button.OK) {
-		const request = new MuseRequest(text);
+	// Include this function for the template
+	innerRegisterApiKey.name;
+}
 
-		const { error } = request.query(ApiModel.OrionFrV2, Endpoint.Tokenize, {
-			text: 'Is this a valid API key?',
-		});
+export function innerRegisterApiKey(key: string) {
+	const userProperties = PropertiesService.getUserProperties();
+	const ui = SpreadsheetApp.getUi();
 
-		if (error) return ui.alert(`Something went wrong: ${error.message}`);
-
-		ui.alert('You are all set!');
-
-		userProperties.setProperty(API_KEY_PROP, text);
-	} else if (button === ui.Button.CLOSE) {
+	if (!key) {
 		ui.alert('You must set your API key in order to use Muse.');
 	}
+
+	const request = new MuseRequest(key);
+
+	const { error } = request.query(ApiModel.OrionFr, Endpoint.Tokenize, {
+		text: 'Is this a valid API key?',
+	});
+
+	if (error) {
+		if (error.message === 'Invalid api key') {
+			return ui.alert('Your API key is invalid.');
+		}
+
+		return ui.alert(error.toString());
+	}
+
+	ui.alert('You are all set!');
+
+	userProperties.setProperty(API_KEY_PROP, key);
 }
 
 // IDEA: replace this with a cell with data validation

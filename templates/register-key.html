@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<base target="_top" />
+
+		<!-- Include the Google Add-on stylesheet -->
+		<link
+			rel="stylesheet"
+			href="https://ssl.gstatic.com/docs/script/css/add-ons.css"
+		/>
+		<!-- Expand the select item to take as much place as possible -->
+		<style>
+			#api-key {
+				width: 400px;
+			}
+
+			p {
+				font-size: large;
+			}
+		</style>
+	</head>
+
+	<script>
+		function submit() {
+			const apiKey = document.getElementById('api-key').value;
+
+			if (apiKey === '') return;
+
+			google.script.run
+				.withSuccessHandler(onSuccess)
+				.innerRegisterApiKey(apiKey);
+		}
+
+		function onSuccess() {
+			google.script.host.close();
+		}
+	</script>
+
+	<body onsubmit="submit()">
+		<form>
+			<input id="api-key" type="text" placeholder="Muse API Key" />
+
+			<input type="submit" value="Submit" />
+		</form>
+
+		<br />
+
+		<p>
+			To get an API Key please head over
+			<a href="https://muse.lighton.ai/playground">muse.lighton.ai</a>.
+		</p>
+	</body>
+</html>
