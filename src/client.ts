@@ -11,7 +11,7 @@ import {
 } from 'lighton-muse';
 import { USER_PROP_USE_STAGING_URL } from './index.js';
 
-const jsonParseOrNull = (json: string): unknown | null => {
+export const jsonParseOrNull = (json: string): unknown | null => {
 	try {
 		return JSON.parse(json);
 	} catch (error) {

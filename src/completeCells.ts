@@ -6,8 +6,8 @@ import {
 	ApiModel,
 	Endpoint,
 } from 'lighton-muse';
+import { MuseRequest, jsonParseOrNull } from './client.js';
 import { SHEET_META_API_MODEL, USER_PROP_API_KEY } from './index.js';
-import { MuseRequest } from './client.js';
 
 // IDEA: handle more parameters
 type UserAllowedParameters = Omit<
@@ -36,7 +36,7 @@ const USER_ALLOWED_PARAMETERS: RecordTypes<UserAllowedParameters> = {
 	frequency_penalty: { type: 'number', min: 0, max: 1 },
 	seed: { type: 'number', min: 0, max: Number.MAX_SAFE_INTEGER },
 	mode: { type: 'string' },
-	// Special case handled (split string on `;`)
+	// Special case handled (`".", ";", ","`)
 	stop_words: { type: 'string' },
 	concat_prompt: { type: 'boolean' },
 	skill: { type: 'string' },
@@ -61,7 +61,7 @@ function _checkUserAllowedParameters(
 
 	if (typeof value !== validation.type) {
 		return `Invalid parameter type: ${key} must be of type "${
-			USER_ALLOWED_PARAMETERS[key]
+			USER_ALLOWED_PARAMETERS[key].type
 		}" and is type "${typeof value}"`;
 	}
 
@@ -70,6 +70,16 @@ function _checkUserAllowedParameters(
 		return `Invalid parameter type: ${key} must be one of "${Object.values(
 			ApiMode
 		).join('" / "')}"`;
+	} else if (key === 'stop_words') {
+		const json = jsonParseOrNull(`[${value}]`);
+
+		if (!json || !Array.isArray(json)) {
+			return `Invalid parameter type: ${key} is not a valid list`;
+		}
+
+		if (json.find((word) => typeof word !== 'string')) {
+			return `Invalid parameter type: ${key} must be a list of strings`;
+		}
 	} else if (
 		validation.type === 'number' &&
 		typeof value === 'number' &&
@@ -138,8 +148,8 @@ function _createRequestOptions(
 		if (error) return { error };
 
 		// Special case for `stop_words`
-		if (param === 'stop_words') {
-			value = value.split(';');
+		if (typeof value === 'string' && param === 'stop_words') {
+			value = JSON.parse(`[${value}]`);
 		}
 
 		// Add the parameter to the request
