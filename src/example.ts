@@ -68,11 +68,7 @@ export function loadExampleSheet() {
 
 	const exampleSheet = spreadsheet.insertSheet(EXAMPLE_SHEET_NAME);
 
-	exampleSheet.addDeveloperMetadata(
-		SHEET_META_API_MODEL,
-		ApiModel.LyraEn,
-		SpreadsheetApp.DeveloperMetadataVisibility.DOCUMENT
-	);
+	exampleSheet.addDeveloperMetadata(SHEET_META_API_MODEL, ApiModel.LyraEn);
 
 	const height = EXAMPLE_SHEET.length;
 	const width = EXAMPLE_SHEET[0].length;
