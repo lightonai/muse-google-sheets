@@ -56,10 +56,10 @@ export function selectModel() {
 		'templates/model-dropdown'
 	)
 		.setSandboxMode(HtmlService.SandboxMode.IFRAME)
-		.setWidth(350)
-		.setHeight(100);
+		.setWidth(300)
+		.setHeight(50);
 
-	ui.showModalDialog(dialog, 'Select the model');
+	ui.showModalDialog(dialog, 'Select the model for this sheet');
 
 	// Include this function for the template
 	innerSelectModel.name;

@@ -207,8 +207,9 @@ export function completeCells() {
 	}
 
 	// Make the request to the Api
+	const model = _getModel(sheet) as ApiModel;
 	const { error, response } = new MuseRequest(apiKey).query(
-		_getModel(sheet) as ApiModel,
+		model,
 		Endpoint.Create,
 		batchRequest
 	);
@@ -226,7 +227,9 @@ export function completeCells() {
 	}
 
 	spreadsheet.toast(
-		`Done in ${(new Date().valueOf() - begin.valueOf()) / 1000}s`,
+		`Done in ${
+			(new Date().valueOf() - begin.valueOf()) / 1000
+		} with ${model}`,
 		'Done!'
 	);
 }
