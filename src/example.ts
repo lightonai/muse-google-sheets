@@ -74,8 +74,14 @@ export function loadExampleSheet() {
 		SpreadsheetApp.DeveloperMetadataVisibility.DOCUMENT
 	);
 
+	const height = EXAMPLE_SHEET.length;
+	const width = EXAMPLE_SHEET[0].length;
+
 	// Cells coordinates are 1-indexed
-	exampleSheet
-		.getRange(1, 1, EXAMPLE_SHEET[0].length, EXAMPLE_SHEET.length)
-		.setValues(EXAMPLE_SHEET);
+	exampleSheet.getRange(1, 1, width, height).setValues(EXAMPLE_SHEET);
+
+	// Set column widths for prompt, params and completion
+	exampleSheet.setColumnWidth(1, 500);
+	exampleSheet.setColumnWidths(2, width - 2, 100);
+	exampleSheet.setColumnWidth(width, 300);
 }
