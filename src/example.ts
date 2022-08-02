@@ -1,7 +1,8 @@
 import { ApiModel } from 'lighton-muse';
 import { SHEET_META_API_MODEL } from './index.js';
 
-const exampleSheet = [
+const EXAMPLE_SHEET_NAME = 'Example';
+const EXAMPLE_SHEET = [
 	[
 		'Prompt',
 		'n_tokens',
@@ -55,16 +56,26 @@ const exampleSheet = [
 export function loadExampleSheet() {
 	const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
 
-	const newSheet = spreadsheet.insertSheet('Example');
+	if (
+		spreadsheet
+			.getSheets()
+			.find((sheet) => sheet.getName() === EXAMPLE_SHEET_NAME)
+	) {
+		spreadsheet.toast('Example sheet already exists.', 'Duplicate', 10);
 
-	newSheet.addDeveloperMetadata(
+		return;
+	}
+
+	const exampleSheet = spreadsheet.insertSheet(EXAMPLE_SHEET_NAME);
+
+	exampleSheet.addDeveloperMetadata(
 		SHEET_META_API_MODEL,
 		ApiModel.LyraEn,
 		SpreadsheetApp.DeveloperMetadataVisibility.DOCUMENT
 	);
 
 	// Cells coordinates are 1-indexed
-	newSheet
-		.getRange(1, 1, exampleSheet[0].length, exampleSheet.length)
-		.setValues(exampleSheet);
+	exampleSheet
+		.getRange(1, 1, EXAMPLE_SHEET[0].length, EXAMPLE_SHEET.length)
+		.setValues(EXAMPLE_SHEET);
 }
