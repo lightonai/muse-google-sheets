@@ -281,7 +281,7 @@ export function completeCells() {
 	spreadsheet.toast(
 		`Done in ${
 			(new Date().valueOf() - begin.valueOf()) / 1000
-		} with ${model}`,
+		}s with ${model}`,
 		'Done!'
 	);
 }
