@@ -11,7 +11,15 @@ import {
 } from 'lighton-muse';
 import { USER_PROP_USE_STAGING_URL } from './index.js';
 
-class MuseApiError extends Error {
+const jsonParseOrNull = (json: string): unknown | null => {
+	try {
+		return JSON.parse(json);
+	} catch (error) {
+		return null;
+	}
+};
+
+export class MuseApiError extends Error {
 	constructor(message: string, public requestId?: string) {
 		super(message);
 
@@ -83,11 +91,3 @@ export class MuseRequest {
 		return response;
 	}
 }
-
-const jsonParseOrNull = (json: string): unknown | null => {
-	try {
-		return JSON.parse(json);
-	} catch (error) {
-		return null;
-	}
-};

@@ -222,7 +222,7 @@ export function completeCells() {
 
 		// Cells coordinates are 1-indexed
 		range
-			.getCell(index + 1 + 1, range.getLastColumn())
+			.getCell(index + 1 + 1, range.getNumColumns())
 			.setValue(output.trim());
 	}
 

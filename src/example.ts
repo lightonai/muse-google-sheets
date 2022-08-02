@@ -1,5 +1,5 @@
-import { SHEET_META_API_MODEL, USER_PROP_API_KEY } from './index.js';
 import { ApiModel } from 'lighton-muse';
+import { SHEET_META_API_MODEL } from './index.js';
 
 const exampleSheet = [
 	[
@@ -55,7 +55,7 @@ const exampleSheet = [
 export function loadExampleSheet() {
 	const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
 
-	const newSheet = spreadsheet.insertSheet('Example (Lyra En)');
+	const newSheet = spreadsheet.insertSheet('Example');
 
 	newSheet.addDeveloperMetadata(
 		SHEET_META_API_MODEL,
