@@ -6,6 +6,7 @@ module.exports = withTantalumConfig('nextJs')({
 		'import/extensions': 'off',
 		'no-unused-expressions': 'off',
 		camelcase: 'off',
+		'default-case': 'off',
 		'no-underscore-dangle': 'off',
 	},
 });

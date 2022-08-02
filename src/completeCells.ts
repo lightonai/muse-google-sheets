@@ -9,10 +9,9 @@ import {
 import { MuseRequest, jsonParseOrNull } from './client.js';
 import { SHEET_META_API_MODEL, USER_PROP_API_KEY } from './index.js';
 
-// IDEA: handle more parameters
 type UserAllowedParameters = Omit<
 	Required<ApiCreateParams>,
-	'n_completions' | 'biases' | 'return_logprobs'
+	'n_completions' | 'return_logprobs'
 >;
 
 type RecordTypes<T> = {
@@ -23,6 +22,8 @@ type RecordTypes<T> = {
 		: T[P] extends number
 		? { type: 'number'; min: number; max: number }
 		: T[P] extends string[]
+		? { type: 'string' }
+		: T[P] extends Record<string, number>
 		? { type: 'string' }
 		: never;
 };
@@ -38,6 +39,8 @@ const USER_ALLOWED_PARAMETERS: RecordTypes<UserAllowedParameters> = {
 	mode: { type: 'string' },
 	// Special case handled (`".", ";", ","`)
 	stop_words: { type: 'string' },
+	// Special case handled (`"another": 2.0, "word": 3.0`)
+	biases: { type: 'string' },
 	concat_prompt: { type: 'boolean' },
 	skill: { type: 'string' },
 };
@@ -65,27 +68,60 @@ function _checkUserAllowedParameters(
 		}" and is type "${typeof value}"`;
 	}
 
-	// If the mode parameter is not a valid model, return false
-	if (key === 'mode' && !Object.values(ApiMode).includes(value as ApiMode)) {
-		return `Invalid parameter type: ${key} must be one of "${Object.values(
-			ApiMode
-		).join('" / "')}"`;
-	} else if (key === 'stop_words') {
-		const json = jsonParseOrNull(`[${value}]`);
+	let json, last, modes;
 
-		if (!json || !Array.isArray(json)) {
-			return `Invalid parameter type: ${key} is not a valid list`;
-		}
+	switch (key) {
+		// Check if the `mode` parameter is not a valid model
+		case 'mode':
+			[last, ...modes] = Object.values(ApiMode);
 
-		if (json.find((word) => typeof word !== 'string')) {
-			return `Invalid parameter type: ${key} must be a list of strings`;
-		}
-	} else if (
-		validation.type === 'number' &&
-		typeof value === 'number' &&
-		(validation.min > value || value > validation.max)
-	) {
-		return `Invalid parameter type: ${key} must be between ${validation.min} and ${validation.max}`;
+			if (!Object.values(ApiMode).includes(value as ApiMode)) {
+				return `Invalid parameter type: ${key} must be one of ${modes.join(
+					', '
+				)} or "${last}"`;
+			}
+
+			break;
+
+		// Check if the `stop_words` parameter is not a valid array
+		case 'stop_words':
+			json = jsonParseOrNull(`[${value}]`);
+
+			if (!json || !Array.isArray(json)) {
+				return `Invalid parameter type: ${key} is not a valid list`;
+			}
+
+			if (json.find((word) => typeof word !== 'string')) {
+				return `Invalid parameter type: ${key} must be a list of strings`;
+			}
+
+			break;
+
+		// Check if the `biases` parameter is not a valid Record<string, number>
+		case 'biases':
+			json = jsonParseOrNull(`{${value}}`);
+
+			if (!json || Array.isArray(json) || typeof json !== 'object') {
+				return `Invalid parameter type: ${key} is not a valid object`;
+			}
+
+			if (
+				Object.values(json).find((weight) => typeof weight !== 'number')
+			) {
+				return `Invalid parameter type: ${key} must be a record of numbers`;
+			}
+
+			break;
+
+		// Check if the `number` parameters are in their valid range
+		default:
+			if (
+				typeof value === 'number' &&
+				validation.type === 'number' &&
+				(validation.min > value || value > validation.max)
+			) {
+				return `Invalid parameter type: ${key} must be between ${validation.min} and ${validation.max}`;
+			}
 	}
 
 	return null;
@@ -147,9 +183,15 @@ function _createRequestOptions(
 
 		if (error) return { error };
 
-		// Special case for `stop_words`
-		if (typeof value === 'string' && param === 'stop_words') {
-			value = JSON.parse(`[${value}]`);
+		// Special cases
+		switch (param) {
+			case 'stop_words':
+				value = JSON.parse(`[${value}]`);
+				break;
+
+			case 'biases':
+				value = JSON.parse(`{${value}}`);
+				break;
 		}
 
 		// Add the parameter to the request
