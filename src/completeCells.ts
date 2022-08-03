@@ -223,9 +223,19 @@ export function completeCells() {
 		return spreadsheet.toast('You did not select a range.', 'Error!', 0);
 	}
 
+	// Check if the minimum area is met
 	if (!(range.getNumColumns() >= 2 && range.getNumRows() >= 2)) {
 		return spreadsheet.toast(
 			'You need to select a range with at least two columns and two rows.',
+			'Error!',
+			0
+		);
+	}
+
+	// Api Batch Request limit is 128
+	if (range.getNumRows() < 128 + 1) {
+		return spreadsheet.toast(
+			'You need to select a range with less than 129 rows.',
 			'Error!',
 			0
 		);

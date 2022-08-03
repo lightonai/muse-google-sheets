@@ -29,9 +29,10 @@ export function onOpen(_event: GoogleAppsScript.Events.SheetsOnOpen) {
 		.addItem('Load example sheet', loadExampleSheet.name)
 		.addToUi();
 
+	// Expose this function for all templates
+	checkMultipleAccountIssue.name;
 	// Expose this function for LightOn internal use
 	toggleStagingUrl.name;
-	checkMultipleAccountIssue.name;
 }
 
 // User property to store their API key
