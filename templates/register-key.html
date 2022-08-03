@@ -21,10 +21,23 @@
 	</head>
 
 	<script>
+		const initiator = '<?!= Session.getEffectiveUser().getEmail() ?>';
+
+		google.script.run
+			.withFailureHandler((error) => {
+				console.error(error);
+
+				// Show the user the error message
+				alert(error);
+			})
+			.checkMultipleAccountIssue(initiator);
+
 		function submit() {
 			const apiKey = document.getElementById('api-key').value;
 
 			if (apiKey === '') return;
+
+			document.querySelector('input[type=submit]').disabled = true;
 
 			google.script.run
 				.withSuccessHandler(onSuccess)

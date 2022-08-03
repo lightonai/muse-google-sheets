@@ -78,7 +78,7 @@ function _checkUserAllowedParameters(
 			if (!Object.values(ApiMode).includes(value as ApiMode)) {
 				return `Invalid parameter type: ${key} must be one of ${modes.join(
 					', '
-				)} or "${last}"`;
+				)} or ${last}.`;
 			}
 
 			break;
@@ -137,7 +137,7 @@ function _validateFirstRow(row: any[]): {
 	// Check that the upper-right cell is the text `prompt`
 	if (!(typeof prompt === 'string' && prompt.toLowerCase() === 'prompt')) {
 		return {
-			error: 'The upper-right cell must contain the text `Prompt`.',
+			error: 'The upper-left cell must contain the text `Prompt`.',
 		};
 	}
 

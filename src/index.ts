@@ -1,4 +1,5 @@
 import {
+	checkMultipleAccountIssue,
 	help,
 	registerApiKey,
 	selectModel,
@@ -30,6 +31,7 @@ export function onOpen(_event: GoogleAppsScript.Events.SheetsOnOpen) {
 
 	// Expose this function for LightOn internal use
 	toggleStagingUrl.name;
+	checkMultipleAccountIssue.name;
 }
 
 // User property to store their API key

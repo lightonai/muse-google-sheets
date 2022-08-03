@@ -9,10 +9,8 @@ import { MuseRequest } from './client.js';
 export function registerApiKey() {
 	const ui = SpreadsheetApp.getUi();
 
-	const dialog = HtmlService.createHtmlOutputFromFile(
-		'templates/register-key'
-	)
-		.setSandboxMode(HtmlService.SandboxMode.IFRAME)
+	const dialog = HtmlService.createTemplateFromFile('templates/register-key')
+		.evaluate()
 		.setWidth(500)
 		.setHeight(100);
 
@@ -52,10 +50,10 @@ export function innerRegisterApiKey(key: string) {
 // IDEA: replace this with a cell with data validation
 export function selectModel() {
 	const ui = SpreadsheetApp.getUi();
-	const dialog = HtmlService.createHtmlOutputFromFile(
+	const dialog = HtmlService.createTemplateFromFile(
 		'templates/model-dropdown'
 	)
-		.setSandboxMode(HtmlService.SandboxMode.IFRAME)
+		.evaluate()
 		.setWidth(300)
 		.setHeight(50);
 
@@ -88,10 +86,28 @@ export function toggleStagingUrl() {
 
 export function help() {
 	const ui = SpreadsheetApp.getUi();
-	const dialog = HtmlService.createHtmlOutputFromFile('templates/help')
-		.setSandboxMode(HtmlService.SandboxMode.IFRAME)
+	const dialog = HtmlService.createTemplateFromFile('templates/help')
+		.evaluate()
 		.setWidth(600)
 		.setHeight(100);
 
 	ui.showModalDialog(dialog, 'Help!');
+}
+
+export function checkMultipleAccountIssue(initiator: string) {
+	const userEmailAddress = Session.getEffectiveUser().getEmail();
+
+	/*
+	 * Check if effective user matches the initiator (the account who triggered the display of the UI)
+	 * Due to a Google bug, if user is connected with multiple accounts inside the same browser session
+	 * google.script.run can be executed by another account than the initiator
+	 */
+
+	if (initiator !== userEmailAddress) {
+		const message = `\
+You are logged in with multiple accounts and this causes errors.
+Log out with account ${userEmailAddress} if you want to continue with the account: ${initiator}`;
+
+		throw new Error(message);
+	}
 }
