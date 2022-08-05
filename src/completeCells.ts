@@ -233,7 +233,7 @@ export function completeCells() {
 	}
 
 	// Api Batch Request limit is 128
-	if (range.getNumRows() < 128 + 1) {
+	if (range.getNumRows() > 128 + 1) {
 		return spreadsheet.toast(
 			'You need to select a range with less than 129 rows.',
 			'Error!',
