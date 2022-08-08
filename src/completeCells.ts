@@ -85,6 +85,9 @@ function _checkUserAllowedParameters(
 
 		// Check if the `stop_words` parameter is not a valid array
 		case 'stop_words':
+			// Trim the last comma, if any
+			value = `${value}`.replace(/,\s*$/u, '');
+
 			json = jsonParseOrNull(`[${value}]`);
 
 			if (!json || !Array.isArray(json)) {
@@ -99,6 +102,9 @@ function _checkUserAllowedParameters(
 
 		// Check if the `biases` parameter is not a valid Record<string, number>
 		case 'biases':
+			// Trim the last comma, if any
+			value = `${value}`.replace(/,\s*$/u, '');
+
 			json = jsonParseOrNull(`{${value}}`);
 
 			if (!json || Array.isArray(json) || typeof json !== 'object') {
