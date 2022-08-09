@@ -5,6 +5,7 @@ import {
 	selectModel,
 	toggleStagingUrl,
 } from './settings.js';
+import { SELECT } from './select.js';
 import { completeCells } from './completeCells.js';
 import { loadExampleSheet } from './example.js';
 
@@ -29,6 +30,8 @@ export function onOpen(_event: GoogleAppsScript.Events.SheetsOnOpen) {
 		.addItem('Load example sheet', loadExampleSheet.name)
 		.addToUi();
 
+	// Include function cells
+	SELECT.name;
 	// Expose this function for all templates
 	checkMultipleAccountIssue.name;
 	// Expose this function for LightOn internal use

@@ -50,7 +50,7 @@ const isUserAllowedParameterKey = (
 	typeof USER_ALLOWED_PARAMETERS[key as keyof UserAllowedParameters] !==
 	'undefined';
 
-const _getModel = (sheet: GoogleAppsScript.Spreadsheet.Sheet) =>
+export const _getModel = (sheet: GoogleAppsScript.Spreadsheet.Sheet) =>
 	sheet
 		.getDeveloperMetadata()
 		.find((meta) => meta.getKey() === SHEET_META_API_MODEL)
