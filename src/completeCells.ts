@@ -56,7 +56,7 @@ const _getModel = (sheet: GoogleAppsScript.Spreadsheet.Sheet) =>
 		.find((meta) => meta.getKey() === SHEET_META_API_MODEL)
 		?.getValue() ?? ApiModel.OrionEn;
 
-function _checkUserAllowedParameters(
+function checkUserAllowedParameters_(
 	key: keyof UserAllowedParameters,
 	value: unknown
 ): string | null {
@@ -133,7 +133,7 @@ function _checkUserAllowedParameters(
 	return null;
 }
 
-function _validateFirstRow(row: any[]): {
+function validateFirstRow_(row: any[]): {
 	params?: (keyof UserAllowedParameters)[];
 	error?: string;
 } {
@@ -164,7 +164,7 @@ function _validateFirstRow(row: any[]): {
 	return { params: parameters };
 }
 
-function _createRequestOptions(
+function createRequestOptions_(
 	text: string,
 	parameters: (keyof UserAllowedParameters)[],
 	values: any[]
@@ -185,7 +185,7 @@ function _createRequestOptions(
 		if (value === '') continue;
 
 		// Check for invalid parameter types
-		const error = _checkUserAllowedParameters(param, value);
+		const error = checkUserAllowedParameters_(param, value);
 
 		if (error) return { error };
 
@@ -251,7 +251,7 @@ export function completeCells() {
 
 	const [firstRow, ...rows] = range.getValues();
 
-	const { error: rowValidationError, params } = _validateFirstRow(firstRow);
+	const { error: rowValidationError, params } = validateFirstRow_(firstRow);
 
 	if (rowValidationError) {
 		return spreadsheet.toast(rowValidationError, 'Error!', 0);
@@ -262,7 +262,7 @@ export function completeCells() {
 	for (const row of rows) {
 		const [prompt, ...values] = row.slice(0, -1);
 
-		const { error, options } = _createRequestOptions(
+		const { error, options } = createRequestOptions_(
 			prompt,
 			params,
 			values

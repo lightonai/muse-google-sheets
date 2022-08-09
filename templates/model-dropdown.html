@@ -23,7 +23,7 @@
 			const choice = document.getElementById('choice').value;
 			google.script.run
 				.withSuccessHandler(onSuccess)
-				.innerSelectModel(choice);
+				.innerSelectModel_(choice);
 		}
 
 		function onSuccess() {
