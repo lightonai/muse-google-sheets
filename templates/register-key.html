@@ -41,7 +41,7 @@
 
 			google.script.run
 				.withSuccessHandler(onSuccess)
-				.innerRegisterApiKey_(apiKey);
+				.innerRegisterApiKey(apiKey);
 		}
 
 		function onSuccess() {

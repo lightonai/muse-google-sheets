@@ -17,10 +17,10 @@ export function registerApiKey() {
 	ui.showModalDialog(dialog, 'Register your API key');
 
 	// Include this function for the template
-	innerRegisterApiKey_.name;
+	innerRegisterApiKey.name;
 }
 
-export function innerRegisterApiKey_(key: string) {
+export function innerRegisterApiKey(key: string) {
 	const userProperties = PropertiesService.getUserProperties();
 	const ui = SpreadsheetApp.getUi();
 
@@ -60,10 +60,10 @@ export function selectModel() {
 	ui.showModalDialog(dialog, 'Select the model for this sheet');
 
 	// Include this function for the template
-	innerSelectModel_.name;
+	innerSelectModel.name;
 }
 
-export function innerSelectModel_(model: ApiModel) {
+export function innerSelectModel(model: ApiModel) {
 	const sheet = SpreadsheetApp.getActiveSheet();
 
 	sheet.addDeveloperMetadata(SHEET_META_API_MODEL, model);
