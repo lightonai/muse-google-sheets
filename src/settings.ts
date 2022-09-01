@@ -66,6 +66,13 @@ export function selectModel() {
 export function innerSelectModel(model: ApiModel) {
 	const sheet = SpreadsheetApp.getActiveSheet();
 
+	// Remove older Developer Metadata with the same key to avoid weird behavior
+	sheet
+		.createDeveloperMetadataFinder()
+		.withKey(SHEET_META_API_MODEL)
+		.find()
+		.forEach((meta) => meta.remove());
+
 	sheet.addDeveloperMetadata(SHEET_META_API_MODEL, model);
 }
 
