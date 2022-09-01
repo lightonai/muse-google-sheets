@@ -20,7 +20,11 @@
 
 	<script>
 		function submit() {
+			// Prevents the user to spam the button
+			document.querySelector('input[type=submit]').disabled = true;
+
 			const choice = document.getElementById('choice').value;
+
 			google.script.run
 				.withSuccessHandler(onSuccess)
 				.innerSelectModel(choice);
